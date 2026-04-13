@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+python-dotenv
+PyJWT
+cryptography
+Pillow
+torch
+transformers==4.56.2
+accelerate
+sentencepiece
+protobuf
+groq
+PyMuPDF

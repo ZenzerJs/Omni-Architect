@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-card: #111111;
+  --bg-card-hover: #161616;
+  --border: #1a1a1a;
+  --border-hover: #2a2a2a;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1a1;
+  --text-muted: #666666;
+  --accent: #e4e4e7;
+  --accent-glow: rgba(228, 228, 231, 0.08);
+  --omni-cx: -9999px;
+  --omni-cy: -9999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.omni-cursor-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      520px circle at var(--omni-cx) var(--omni-cy),
+      rgba(255, 255, 255, 0.10),
+      rgba(255, 255, 255, 0.00) 55%
+    );
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* Reduce motion / battery */
+@media (prefers-reduced-motion: reduce) {
+  .omni-cursor-glow {
+    display: none;
+  }
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+@keyframes omni-fade-up {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Title animation is handled via inline styles in AnimatedTitle.tsx */
+
+@keyframes omni-ripple {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.35; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}
+
+.omni-enter {
+  animation: omni-fade-up 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.omni-ripple {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.omni-ripple > span {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.65);
+  animation: omni-ripple 520ms ease-out forwards;
+  mix-blend-mode: screen;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+textarea, input, select, button {
+  font-family: inherit;
+}
+
+textarea {
+  font-family: 'JetBrains Mono', monospace;
+}

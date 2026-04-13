@@ -1,0 +1,45 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Third-party VL stack (clone separately; see backend/README.md)
+DeepSeek-VL/
+
+# SSH / TLS private material (never commit)
+.ssh/
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+
+# Node / Next.js
+web/node_modules/
+web/.next/
+web/out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime / local artifacts
+specs/sessions/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
