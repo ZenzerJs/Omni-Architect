@@ -40,13 +40,10 @@ APP_TITLE = "Omni-Architect Backend"
 SESSIONS_DIR = _project_root / "specs" / "sessions"
 SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 
-JWT_SECRET = os.getenv("OMNI_JWT_SECRET", "")
+_raw_jwt = os.getenv("OMNI_JWT_SECRET", "")
 OMNI_PASSWORD = os.getenv("OMNI_PASSWORD", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 FRONTEND_ORIGIN = os.getenv("OMNI_FRONTEND_ORIGIN", "http://localhost:3003")
-
-if not JWT_SECRET:
-    JWT_SECRET = "dev-only-change-me"
 
 
 def _normalize_env_secret(value: str) -> str:
@@ -60,7 +57,34 @@ OMNI_PASSWORD = _normalize_env_secret(OMNI_PASSWORD)
 if not OMNI_PASSWORD:
     OMNI_PASSWORD = ""
 
+JWT_SECRET = _normalize_env_secret(_raw_jwt)
+if OMNI_PASSWORD:
+    if len(JWT_SECRET) < 32:
+        raise SystemExit(
+            "OMNI_JWT_SECRET must be set to at least 32 characters when OMNI_PASSWORD is enabled "
+            "(so session tokens cannot be forged). Generate one with:\n"
+            '  python -c "import secrets; print(secrets.token_urlsafe(48))"\n'
+            "Then add OMNI_JWT_SECRET=... to your .env file."
+        )
+else:
+    if not JWT_SECRET:
+        JWT_SECRET = secrets.token_urlsafe(48)
+        print(
+            "[boot] OMNI_JWT_SECRET not set; using ephemeral signing key for this process "
+            "(cookies invalid after restart). Set OMNI_JWT_SECRET for stable dev sessions."
+        )
+
+_expose_raw = os.getenv("OMNI_EXPOSE_OPENAPI", "").strip().lower()
+if _expose_raw in ("1", "true", "yes"):
+    EXPOSE_OPENAPI = True
+elif _expose_raw in ("0", "false", "no"):
+    EXPOSE_OPENAPI = False
+else:
+    # With password auth, hide API docs/schema by default unless explicitly enabled.
+    EXPOSE_OPENAPI = not bool(OMNI_PASSWORD)
+
 print(f"[boot] OMNI_PASSWORD loaded: {'YES (' + str(len(OMNI_PASSWORD)) + ' chars)' if OMNI_PASSWORD else 'NO (auth disabled)'}")
+print(f"[boot] OpenAPI/docs: {'ON' if EXPOSE_OPENAPI else 'OFF'} (set OMNI_EXPOSE_OPENAPI=1 to force on)")
 
 JWT_ALG = "HS256"
 AUTH_COOKIE_NAME = "omni_auth"
@@ -282,8 +306,8 @@ async def _save_uploaded_files(
                 (files_dir / txt_name).write_text(pdf_text, encoding="utf-8")
                 record["text_file"] = txt_name
                 record["page_count"] = fitz.open(str(dest)).page_count
-            except Exception as exc:
-                record["extraction_error"] = str(exc)
+            except Exception:
+                record["extraction_error"] = "pdf_text_extraction_failed"
 
         new_records.append(record)
         total += 1
@@ -881,7 +905,12 @@ def _extract_ui_spec_markdown(text: str) -> str:
 #  FastAPI App
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title=APP_TITLE)
+app = FastAPI(
+    title=APP_TITLE,
+    docs_url="/docs" if EXPOSE_OPENAPI else None,
+    redoc_url="/redoc" if EXPOSE_OPENAPI else None,
+    openapi_url="/openapi.json" if EXPOSE_OPENAPI else None,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -894,11 +923,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health() -> Dict[str, Any]:
-    return {
-        "ok": True,
-        "auth_required": bool(OMNI_PASSWORD),
-        "sessions_dir": str(SESSIONS_DIR),
-    }
+    return {"ok": True, "auth_required": bool(OMNI_PASSWORD)}
 
 
 @app.post("/auth/login")
@@ -1534,19 +1559,22 @@ def ship_to_cloud(body: ShipRequest) -> Dict[str, Any]:
         freq_penalty = 0.1
 
     t0 = time.time()
-    completion = groq_client.chat.completions.create(
-        model=body.model_name,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
-        ],
-        temperature=temp,
-        top_p=top_p_val,
-        max_completion_tokens=max_tokens,
-        frequency_penalty=freq_penalty,
-        stream=False,
-        stop=None,
-    )
+    try:
+        completion = groq_client.chat.completions.create(
+            model=body.model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=temp,
+            top_p=top_p_val,
+            max_completion_tokens=max_tokens,
+            frequency_penalty=freq_penalty,
+            stream=False,
+            stop=None,
+        )
+    except Exception:
+        raise HTTPException(status_code=502, detail="Cloud generation failed") from None
 
     t1 = time.time()
     output_text = (completion.choices[0].message.content or "").strip()

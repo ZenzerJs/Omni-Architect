@@ -2,7 +2,10 @@
 
 ### Security
 - Set `OMNI_PASSWORD` in `.env` to require login.
-- Set `OMNI_JWT_SECRET` in `.env` for a persistent auth cookie secret.
+- When `OMNI_PASSWORD` is set, **`OMNI_JWT_SECRET` is required** (at least 32 characters). The server will not start without it, so JWTs cannot be forged using a baked-in default. Generate with:  
+  `python -c "import secrets; print(secrets.token_urlsafe(48))"`
+- With password auth, **`/docs` and `/openapi.json` are off by default**. Set `OMNI_EXPOSE_OPENAPI=1` in `.env` to enable them (e.g. local debugging).
+- Without `OMNI_PASSWORD`, the app uses an **ephemeral JWT signing key** each run unless you set `OMNI_JWT_SECRET` (cookies reset on restart).
 
 ### DeepSeek-VL (local only, not in git)
 Clone the upstream repo next to this project (or into `DeepSeek-VL/`), then install the package in editable mode:
