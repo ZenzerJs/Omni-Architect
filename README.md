@@ -1,16 +1,45 @@
+<div align="center">
+
 # 🤖 Omni-Architect
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6F00?style=flat-square)](https://www.langchain.com/langgraph)
-[![Groq](https://img.shields.io/badge/Groq-Ultra--Low_Latency_LLM-f55036?style=flat-square)](https://groq.com/)
+**Turn visual briefs into structured specifications and generated UI.**
 
-> A multi-agent AI orchestration system built with Python, LangGraph, LangChain, and Groq API. Designed agent coordination logic for task decomposition, multimodal vision analysis, and parallel execution across specialized agents with ultra-low latency inference.
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6F00?style=flat)](https://www.langchain.com/langgraph)
+[![Groq](https://img.shields.io/badge/Groq-Ultra--Low_Latency_LLM-f55036?style=flat)](https://groq.com/)
+
+**Local setup below**
+
+<img src="docs/images/screenshot.jpg" alt="Omni-Architect interface" width="900" />
+
+<sub>Local development sign-in interface. Backend authentication, local vision inference, and cloud generation require separate configuration.</sub>
+
+</div>
 
 ---
 
-## 🌟 Key Features
+## 📋 Contents
+
+- [Overview](#-overview)
+- [Key Capabilities](#-key-capabilities)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Repository Layout](#-repository-layout)
+- [Agent Coordination Workflow](#-agent-coordination-workflow)
+- [Security & Configuration](#-security--configuration)
+
+---
+
+## 💡 Overview
+
+A multi-agent AI orchestration system built with Python, LangGraph, LangChain, and Groq API. Designed agent coordination logic for task decomposition, multimodal vision analysis, and parallel execution across specialized agents with ultra-low latency inference.
+
+---
+
+## ✨ Key Capabilities
 
 - **Multi-Agent Orchestration**: State-driven task decomposition and execution workflow powered by **LangGraph** (`StateGraph`) and **LangChain**.
 - **Multimodal Vision & Spec Extraction**: Integrated vision-language parsing using DeepSeek-VL and Groq LLMs to analyze design mockups/wireframes and extract structured markdown UI specifications (`## UI_SPEC`).
@@ -21,26 +50,25 @@
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Architecture
 
-```text
-Omni-Architect/
-├── backend/                  # FastAPI service for orchestration, auth, & API endpoints
-│   ├── app.py                # Server entry point & route definitions
-│   ├── requirements.txt      # Python backend dependencies
-│   ├── test_heuristic.py     # Heuristic test runner
-│   └── README.md             # Backend-specific instructions
-├── web/                      # Next.js 15 + TypeScript web application
-│   ├── app/                  # App Router pages and global layouts
-│   ├── components/           # UI components (OmniApp, AnimatedTitle, Starfield)
-│   ├── package.json          # Frontend dependencies
-│   └── README.md             # Frontend-specific configuration
-├── specs/                    # Output directory for generated markdown specs & sessions
-├── omni_architect.py         # Core LangGraph multi-agent execution script
-├── GeneratedUI.jsx           # Sample compiled React output component
-├── .env.example              # Environment variables template
-└── .gitignore                # Git exclusions
+```mermaid
+flowchart LR
+    N0["Visual brief"] --> N1["Local vision extraction"]
+    N1["Local vision extraction"] --> N2["Structured specification"]
+    N2["Structured specification"] --> N3["LangGraph coordination"]
+    N3["LangGraph coordination"] --> N4["Cloud code generation"]
+    N4["Cloud code generation"]
 ```
+
+---
+
+## 🧱 Tech Stack
+
+- **Language Models & Vision**: DeepSeek-VL, Groq API (Llama 3 / DeepSeek models)
+- **Agent Framework**: LangGraph, LangChain
+- **Backend**: Python 3.10+, FastAPI, Uvicorn, PyJWT, PyMuPDF, PyTorch, Transformers
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS, Lucide React
 
 ---
 
@@ -122,6 +150,29 @@ python omni_architect.py --image test_mockup.jpg
 
 ---
 
+## 📁 Repository Layout
+
+```text
+Omni-Architect/
+├── backend/                  # FastAPI service for orchestration, auth, & API endpoints
+│   ├── app.py                # Server entry point & route definitions
+│   ├── requirements.txt      # Python backend dependencies
+│   ├── test_heuristic.py     # Heuristic test runner
+│   └── README.md             # Backend-specific instructions
+├── web/                      # Next.js 15 + TypeScript web application
+│   ├── app/                  # App Router pages and global layouts
+│   ├── components/           # UI components (OmniApp, AnimatedTitle, Starfield)
+│   ├── package.json          # Frontend dependencies
+│   └── README.md             # Frontend-specific configuration
+├── specs/                    # Output directory for generated markdown specs & sessions
+├── omni_architect.py         # Core LangGraph multi-agent execution script
+├── GeneratedUI.jsx           # Sample compiled React output component
+├── .env.example              # Environment variables template
+└── .gitignore                # Git exclusions
+```
+
+---
+
 ## 🔄 Agent Coordination Workflow
 
 ```mermaid
@@ -141,15 +192,8 @@ graph TD
 - **JWT Authentication**: When `OMNI_PASSWORD` is configured, an `OMNI_JWT_SECRET` (at least 32 characters) is strictly enforced.
 - **OpenAPI Isolation**: Swagger documentation (`/docs`) is disabled by default when password protection is active. Set `OMNI_EXPOSE_OPENAPI=1` in `.env` for local debugging.
 
----
+<div align="center">
 
-## 🛠️ Tech Stack Overview
+*Built by [@ZenzerJs](https://github.com/ZenzerJs)*
 
-- **Language Models & Vision**: DeepSeek-VL, Groq API (Llama 3 / DeepSeek models)
-- **Agent Framework**: LangGraph, LangChain
-- **Backend**: Python 3.10+, FastAPI, Uvicorn, PyJWT, PyMuPDF, PyTorch, Transformers
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS, Lucide React
-
----
-
-*Developed by [ZenzerJs](https://github.com/ZenzerJs)*
+</div>
